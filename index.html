@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>3D Heart Particles</title>
+
+<h1>I Love You ❤️</h1>
+<p>This heart is for you.</p>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+background:black;
+}
+svg{
+position:absolute;
+width:0;
+height:0;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- Hidden SVG heart path -->
+<svg viewBox="0 0 600 552">
+<path id="heartPath"
+d="M300,520
+C300,520 20,350 20,180
+C20,80 100,20 180,20
+C240,20 300,80 300,120
+C300,80 360,20 420,20
+C500,20 580,80 580,180
+C580,350 300,520 300,520"
+fill="none"/>
+</svg>
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+
+console.clear();
+
+/* SETUP */
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth / window.innerHeight,
+0.1,
+5000
+);
+
+camera.position.z = 500;
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+/* CONTROLS */
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+/* PARTICLES */
+
+const tl = gsap.timeline({
+repeat:-1,
+yoyo:true
+});
+
+const path = document.querySelector("#heartPath");
+const length = path.getTotalLength();
+
+const vertices = [];
+
+for(let i=0;i<length;i+=2){
+
+const point = path.getPointAtLength(i);
+
+const vector = new THREE.Vector3(
+point.x,
+-point.y,
+(Math.random()-0.5)*50
+);
+
+vector.x += (Math.random()-0.5)*20;
+vector.y += (Math.random()-0.5)*20;
+
+vertices.push(vector);
+
+tl.from(vector,{
+x:300,
+y:-276,
+z:0,
+ease:"power2.inOut",
+duration:gsap.utils.random(2,5)
+},i*0.003);
+
+}
+
+const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+
+const material = new THREE.PointsMaterial({
+color:0xff4d6d,
+size:3,
+blending:THREE.AdditiveBlending
+});
+
+const particles = new THREE.Points(geometry,material);
+
+particles.position.x -= 300;
+particles.position.y += 276;
+
+scene.add(particles);
+
+/* ROTATION ANIMATION */
+
+gsap.fromTo(scene.rotation,{
+y:-0.2
+},{
+y:0.2,
+repeat:-1,
+yoyo:true,
+duration:3,
+ease:"power2.inOut"
+});
+
+/* RENDER */
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+geometry.setFromPoints(vertices);
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+/* RESIZE */
+
+window.addEventListener("resize",()=>{
+
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+});
+
+</script>
+
+</body>
+</html>
