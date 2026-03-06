@@ -2,36 +2,91 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>3D Heart Particles</title>
+<title>For You ❤️</title>
 
 <style>
+
 body{
-margin:0;
-overflow:hidden;
-background:black;
+  margin:0;
+  overflow:hidden;
+  background:black;
+  font-family:sans-serif;
 }
+
+/* Start Screen */
+#startScreen{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:black;
+}
+
+button{
+  padding:18px 35px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:#ff4d6d;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#ff1f4b;
+}
+
+/* Love Message */
+#mainContent{
+  position:absolute;
+  top:20px;
+  width:100%;
+  text-align:center;
+  display:none;
+}
+
+h1{
+  color:#ff4d6d;
+}
+
+p{
+  color:white;
+}
+
 svg{
-position:absolute;
-width:0;
-height:0;
-
-
+  position:absolute;
+  width:0;
+  height:0;
 }
+
+/* Background stars */
+.star{
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:white;
+  border-radius:50%;
+  opacity:0.7;
+}
+
 </style>
 
 </head>
 
 <body>
 
-    <h1 style="color:#ff4d6d;text-align:center;font-family:sans-serif;">
-I Love You yang❤️
-</h1>
+<!-- Start Button -->
+<div id="startScreen">
+<button onclick="openHeart()">Tekanlaaa 💌</button>
+</div>
 
-<p style="color:white;text-align:center;font-size:18px;">
-Nah love untuk awak ^v^.
-</p>
+<!-- Love Message -->
+<div id="mainContent">
+<h1>I Love You Yang ❤️</h1>
+<p>Nah love :p</p>
+</div>
 
-<!-- Hidden SVG heart path -->
+<!-- Hidden SVG Heart -->
 <svg viewBox="0 0 600 552">
 <path id="heartPath"
 d="M300,520
@@ -42,8 +97,6 @@ C300,80 360,20 420,20
 C500,20 580,80 580,180
 C580,350 300,520 300,520"
 fill="none"/>
-
-
 </svg>
 
 <!-- Libraries -->
@@ -53,51 +106,78 @@ fill="none"/>
 
 <script>
 
-console.clear();
+/* BUTTON FUNCTION */
+function openHeart(){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("mainContent").style.display="block";
 
-/* SETUP */
+  initBackgroundStars();
+  initAnimation();
+}
+
+/* BACKGROUND PARTICLES (STARS) */
+function initBackgroundStars(){
+  const starCount = 100; // number of stars
+  for(let i=0;i<starCount;i++){
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random()*window.innerWidth + 'px';
+    star.style.top = Math.random()*window.innerHeight + 'px';
+    const size = Math.random()*2 + 1;
+    star.style.width = star.style.height = size + 'px';
+    star.style.opacity = Math.random()*0.7 + 0.3;
+
+    document.body.appendChild(star);
+
+    // twinkling effect
+    gsap.to(star,{
+      opacity: Math.random()*0.7 + 0.3,
+      yoyo:true,
+      repeat:-1,
+      duration:Math.random()*2 + 1
+    });
+  }
+}
+
+/* HEART ANIMATION */
+function initAnimation(){
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
 75,
-window.innerWidth / window.innerHeight,
+window.innerWidth/window.innerHeight,
 0.1,
 5000
 );
 
-camera.position.z = 500;
+camera.position.z=500;
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* CONTROLS */
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
 
-/* PARTICLES */
+const tl = gsap.timeline({repeat:-1,yoyo:true});
 
-const tl = gsap.timeline({
-repeat:-1,
-yoyo:true
-});
+const path=document.querySelector("#heartPath");
+const length=path.getTotalLength();
 
-const path = document.querySelector("#heartPath");
-const length = path.getTotalLength();
-
-const vertices = [];
+const vertices=[];
 
 for(let i=0;i<length;i+=2){
 
-const point = path.getPointAtLength(i);
+const point=path.getPointAtLength(i);
 
-const vector = new THREE.Vector3(
+const vector=new THREE.Vector3(
 point.x,
 -point.y,
 (Math.random()-0.5)*50
 );
 
-vector.x += (Math.random()-0.5)*20;
-vector.y += (Math.random()-0.5)*20;
+vector.x+=(Math.random()-0.5)*20;
+vector.y+=(Math.random()-0.5)*20;
 
 vertices.push(vector);
 
@@ -111,34 +191,27 @@ duration:gsap.utils.random(2,5)
 
 }
 
-const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+const geometry=new THREE.BufferGeometry().setFromPoints(vertices);
 
-const material = new THREE.PointsMaterial({
+const material=new THREE.PointsMaterial({
 color:0xff4d6d,
 size:3,
 blending:THREE.AdditiveBlending
 });
 
-const particles = new THREE.Points(geometry,material);
+const particles=new THREE.Points(geometry,material);
 
-particles.position.x -= 300;
-particles.position.y += 276;
+particles.position.x-=300;
+particles.position.y+=276;
 
 scene.add(particles);
 
-/* ROTATION ANIMATION */
-
-gsap.fromTo(scene.rotation,{
-y:-0.2
-},{
+gsap.fromTo(scene.rotation,{y:-0.2},{
 y:0.2,
 repeat:-1,
 yoyo:true,
-duration:3,
-ease:"power2.inOut"
+duration:3
 });
-
-/* RENDER */
 
 function animate(){
 
@@ -152,16 +225,15 @@ renderer.render(scene,camera);
 
 animate();
 
-/* RESIZE */
-
 window.addEventListener("resize",()=>{
 
-camera.aspect = window.innerWidth/window.innerHeight;
+camera.aspect=window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
-
 renderer.setSize(window.innerWidth,window.innerHeight);
 
 });
+
+}
 
 </script>
 
